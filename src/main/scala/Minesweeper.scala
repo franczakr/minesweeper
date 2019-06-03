@@ -94,8 +94,18 @@ object Minesweeper extends JFXApp {
   }
 
   private def onFieldClick(field: Field, mouseEvent: MouseEvent = null) {
-    if (field.state != Visited() && mouseEvent != null) {
-      if (field.state == UnVisited() && mouseEvent.getButton == javafx.scene.input.MouseButton.PRIMARY) {
+    if (field.state != Visited()) {
+      if (mouseEvent != null && mouseEvent.getButton == javafx.scene.input.MouseButton.SECONDARY) {
+        if(field.state == Flagged()) {
+          field.setGraphic(null)
+          field.state = UnVisited()
+        }
+        else {
+          field.graphic = new ImageView("res/flag.png")
+          field.state = Flagged()
+        }
+      }
+      else if (field.state == UnVisited()) {
         field.state = Visited()
         field.background = getBackground(200, 200, 200)
         if (field.isBomb) {
@@ -141,16 +151,6 @@ object Minesweeper extends JFXApp {
             else if (field.nearBombsCount >= 6)
               field.background = getBackground(255, 153, 153)
           }
-        }
-      }
-      else if (mouseEvent.getButton == javafx.scene.input.MouseButton.SECONDARY) {
-        if(field.state == Flagged()) {
-          field.setGraphic(null)
-          field.state = UnVisited()
-        }
-        else {
-          field.graphic = new ImageView("res/flag.png")
-          field.state = Flagged()
         }
       }
     }
