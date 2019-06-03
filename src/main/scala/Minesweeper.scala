@@ -15,73 +15,68 @@ import views.Field
 import scala.util.Random
 
 object Minesweeper extends JFXApp {
-  def countNearBombs(fields: Array[Array[Field]], x: Int, y: Int): Int = {
-    var nearBombs = 0
-    for (dx <- -1 to 1) {
-      for (dy <- -1 to 1) {
-        if (x + dx >= 0 && x + dx < mapDims && y + dy >= 0 && y + dy < mapDims && fields(x + dx)(y + dy).isBomb)
-          nearBombs += 1
-      }
-    }
-    nearBombs
-  }
 
   private val mapDims = 10
   private val fields = Array.ofDim[Field](mapDims, mapDims)
-  stage = new PrimaryStage {
-    title = "Minesweeper"
-    icons.add(new Image("bomb.png"))
-    scene = new Scene {
-      fill = White
-      root = new BorderPane {
-        top = new MenuBar {
-          useSystemMenuBar = true
-          menus = List(
-            new Menu("Game") {
-              items = List(
-                new MenuItem("New Game") {
-                  onAction = (_: ActionEvent) => {
-                    //TODO newGame
-                  }
-                },
-                new MenuItem("Exit") {
-                  onAction = (_: ActionEvent) => {
-                    Platform.exit()
-                    System.exit(0)
-                  }
-                },
-              )
-            },
-            new Menu("Help") {
-              items = List(
-                new MenuItem("Authors") {
-                  onAction = (_: ActionEvent) => {
-                    new Alert(AlertType.None) {
-                      initOwner(stage)
-                      title = "Autorzy"
-                      headerText = ""
-                      contentText = "Rafał Franczak i Piotr Kotara"
-                      buttonTypes = Seq(ButtonType.OK)
-                    }.showAndWait()
-                  }
-                },
-              )
-            },
-          )
-        }
-        center = new GridPane {
-          for (y <- 0 until mapDims) {
-            for (x <- 0 until mapDims) {
-              fields(x)(y) = new Field(x, y) {
-                onMouseClicked = (mouseEvent: MouseEvent) => onFieldClick(fields(x)(y), mouseEvent)
-              }
-              fields(x)(y).isBomb = if (new Random().nextInt(10) > 8) true else false
-              add(fields(x)(y), x, y, 1, 1)
-            }
+
+  newGame()
+
+  def newGame() {
+    stage = new PrimaryStage {
+      title = "Minesweeper"
+      icons.add(new Image("bomb.png"))
+      scene = new Scene {
+        fill = White
+        root = new BorderPane {
+          top = new MenuBar {
+            useSystemMenuBar = true
+            menus = List(
+              new Menu("Game") {
+                items = List(
+                  new MenuItem("New Game") {
+                    onAction = (_: ActionEvent) => {
+                      newGame()
+                    }
+                  },
+                  new MenuItem("Exit") {
+                    onAction = (_: ActionEvent) => {
+                      Platform.exit()
+                      System.exit(0)
+                    }
+                  },
+                )
+              },
+              new Menu("Help") {
+                items = List(
+                  new MenuItem("Authors") {
+                    onAction = (_: ActionEvent) => {
+                      new Alert(AlertType.None) {
+                        initOwner(stage)
+                        title = "Autorzy"
+                        headerText = ""
+                        contentText = "Rafał Franczak\nPiotr Kotara"
+                        buttonTypes = Seq(ButtonType.OK)
+                      }.showAndWait()
+                    }
+                  },
+                )
+              },
+            )
           }
-          for (y <- 0 until mapDims) {
-            for (x <- 0 until mapDims) {
-              fields(x)(y).nearBombsCount = countNearBombs(fields, x, y)
+          center = new GridPane {
+            for (y <- 0 until mapDims) {
+              for (x <- 0 until mapDims) {
+                fields(x)(y) = new Field(x, y) {
+                  onMouseClicked = (mouseEvent: MouseEvent) => onFieldClick(fields(x)(y), mouseEvent)
+                }
+                fields(x)(y).isBomb = if (new Random().nextInt(10) > 8) true else false
+                add(fields(x)(y), x, y, 1, 1)
+              }
+            }
+            for (y <- 0 until mapDims) {
+              for (x <- 0 until mapDims) {
+                fields(x)(y).nearBombsCount = countNearBombs(fields, x, y)
+              }
             }
           }
         }
@@ -97,7 +92,7 @@ object Minesweeper extends JFXApp {
     )))
   }
 
-  private def onFieldClick(field: Field, mouseEvent: MouseEvent = null): Unit = {
+  private def onFieldClick(field: Field, mouseEvent: MouseEvent = null) {
     if (!field.visited) {
       field.visited = true
       field.background = getBackground(200, 200, 200)
@@ -113,7 +108,7 @@ object Minesweeper extends JFXApp {
           buttonTypes = Seq(NewGameButton, QuitButton)
         }.showAndWait()
         result match {
-          case Some(NewGameButton) => //TODO newGame
+          case Some(NewGameButton) => newGame()
           case _ => Platform.exit(); System.exit(0)
         }
       }
@@ -145,8 +140,18 @@ object Minesweeper extends JFXApp {
             field.background = getBackground(255, 153, 153)
         }
       }
-
     }
+  }
+
+  def countNearBombs(fields: Array[Array[Field]], x: Int, y: Int): Int = {
+    var nearBombs = 0
+    for (dx <- -1 to 1) {
+      for (dy <- -1 to 1) {
+        if (x + dx >= 0 && x + dx < mapDims && y + dy >= 0 && y + dy < mapDims && fields(x + dx)(y + dy).isBomb)
+          nearBombs += 1
+      }
+    }
+    nearBombs
   }
 
 }
