@@ -1,6 +1,7 @@
 package views
 
 import scalafx.scene.control.Button
+import utils.{FieldState, UnVisited}
 
 class Field (xx: Int, yy: Int) extends Button {
   private val size = 40
@@ -8,7 +9,7 @@ class Field (xx: Int, yy: Int) extends Button {
   var nearBombsCount = 0
   var x: Int = xx
   var y: Int = yy
-  var visited: Boolean = false
+  var state: FieldState = UnVisited()
   minWidth = size
   maxWidth = size
   minHeight = size

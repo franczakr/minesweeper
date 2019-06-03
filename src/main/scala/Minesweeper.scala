@@ -3,13 +3,14 @@ import javafx.scene.input.MouseEvent
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.application.{JFXApp, Platform}
 import scalafx.geometry.Insets
-import scalafx.scene.Scene
+import scalafx.scene.{Node, Scene}
 import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.control._
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout._
 import scalafx.scene.paint.Color
 import scalafx.scene.paint.Color._
+import utils.{Flagged, UnVisited, Visited}
 import views.Field
 
 import scala.util.Random
@@ -24,7 +25,7 @@ object Minesweeper extends JFXApp {
   def newGame() {
     stage = new PrimaryStage {
       title = "Minesweeper"
-      icons.add(new Image("bomb.png"))
+      icons.add(new Image("res/bomb.png"))
       scene = new Scene {
         fill = White
         root = new BorderPane {
@@ -93,51 +94,63 @@ object Minesweeper extends JFXApp {
   }
 
   private def onFieldClick(field: Field, mouseEvent: MouseEvent = null) {
-    if (!field.visited) {
-      field.visited = true
-      field.background = getBackground(200, 200, 200)
-      if (field.isBomb) {
-        field.graphic = new ImageView("bomb.png")
-        val NewGameButton = new ButtonType("New Game")
-        val QuitButton = new ButtonType("Quit")
-        val result = new Alert(AlertType.None) {
-          initOwner(stage)
-          title = "PRZEGRAŁEŚ"
-          headerText = ""
-          contentText = "No sory, zostałeś wyjebany w powietrze"
-          buttonTypes = Seq(NewGameButton, QuitButton)
-        }.showAndWait()
-        result match {
-          case Some(NewGameButton) => newGame()
-          case _ => Platform.exit(); System.exit(0)
-        }
-      }
-      else {
-        if (field.nearBombsCount == 0) {
-          val x = field.x
-          val y = field.y
-          for (dx <- -1 to 1) {
-            for (dy <- -1 to 1) {
-              if (x + dx >= 0 && x + dx < mapDims && y + dy >= 0 && y + dy < mapDims &&
-                !fields(x + dx)(y + dy).isBomb && !fields(x + dx)(y + dy).visited)
-                onFieldClick(fields(x + dx)(y + dy))
-            }
+    if (field.state != Visited() && mouseEvent != null) {
+      if (field.state == UnVisited() && mouseEvent.getButton == javafx.scene.input.MouseButton.PRIMARY) {
+        field.state = Visited()
+        field.background = getBackground(200, 200, 200)
+        if (field.isBomb) {
+          field.graphic = new ImageView("res/bomb.png")
+          val NewGameButton = new ButtonType("New Game")
+          val QuitButton = new ButtonType("Quit")
+          val result = new Alert(AlertType.None) {
+            initOwner(stage)
+            title = "Przegrałeś"
+            headerText = ""
+            contentText = "No sory, zostałeś wyjebany w powietrze"
+            buttonTypes = Seq(NewGameButton, QuitButton)
+          }.showAndWait()
+          result match {
+            case Some(NewGameButton) => newGame()
+            case _ => Platform.exit(); System.exit(0)
           }
         }
-        else if (field.nearBombsCount > 0) {
-          field.text = field.nearBombsCount.toString
-          if (field.nearBombsCount == 1)
-            field.background = getBackground(217, 255, 179)
-          else if (field.nearBombsCount == 2)
-            field.background = getBackground(179, 255, 255)
-          else if (field.nearBombsCount == 3)
-            field.background = getBackground(255, 255, 179)
-          else if (field.nearBombsCount == 4)
-            field.background = getBackground(255, 217, 179)
-          else if (field.nearBombsCount == 5)
-            field.background = getBackground(255, 179, 179)
-          else if (field.nearBombsCount >= 6)
-            field.background = getBackground(255, 153, 153)
+        else {
+          if (field.nearBombsCount == 0) {
+            val x = field.x
+            val y = field.y
+            for (dx <- -1 to 1) {
+              for (dy <- -1 to 1) {
+                if (x + dx >= 0 && x + dx < mapDims && y + dy >= 0 && y + dy < mapDims &&
+                  !fields(x + dx)(y + dy).isBomb && fields(x + dx)(y + dy).state == UnVisited())
+                  onFieldClick(fields(x + dx)(y + dy))
+              }
+            }
+          }
+          else if (field.nearBombsCount > 0) {
+            field.text = field.nearBombsCount.toString
+            if (field.nearBombsCount == 1)
+              field.background = getBackground(217, 255, 179)
+            else if (field.nearBombsCount == 2)
+              field.background = getBackground(179, 255, 255)
+            else if (field.nearBombsCount == 3)
+              field.background = getBackground(255, 255, 179)
+            else if (field.nearBombsCount == 4)
+              field.background = getBackground(255, 217, 179)
+            else if (field.nearBombsCount == 5)
+              field.background = getBackground(255, 179, 179)
+            else if (field.nearBombsCount >= 6)
+              field.background = getBackground(255, 153, 153)
+          }
+        }
+      }
+      else if (mouseEvent.getButton == javafx.scene.input.MouseButton.SECONDARY) {
+        if(field.state == Flagged()) {
+          field.setGraphic(null)
+          field.state = UnVisited()
+        }
+        else {
+          field.graphic = new ImageView("res/flag.png")
+          field.state = Flagged()
         }
       }
     }
