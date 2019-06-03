@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Minesweeper.iml" filepath="$PROJECT_DIR$/.idea/modules/Minesweeper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Saper.iml" filepath="$PROJECT_DIR$/.idea/modules/Saper.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/saper-build.iml" filepath="$PROJECT_DIR$/.idea/modules/saper-build.iml" />
     </modules>
   </component>

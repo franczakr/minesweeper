@@ -1,12 +1,13 @@
+import javafx.event.ActionEvent
 import javafx.scene.input.MouseEvent
-import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
+import scalafx.application.{JFXApp, Platform}
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
-import scalafx.scene.control.Alert
 import scalafx.scene.control.Alert.AlertType
-import scalafx.scene.image.ImageView
-import scalafx.scene.layout.{Background, BackgroundFill, CornerRadii, GridPane}
+import scalafx.scene.control._
+import scalafx.scene.image.{Image, ImageView}
+import scalafx.scene.layout._
 import scalafx.scene.paint.Color
 import scalafx.scene.paint.Color._
 import views.Field
@@ -29,21 +30,59 @@ object Minesweeper extends JFXApp {
   private val fields = Array.ofDim[Field](mapDims, mapDims)
   stage = new PrimaryStage {
     title = "Minesweeper"
+    icons.add(new Image("bomb.png"))
     scene = new Scene {
       fill = White
-      content = new GridPane {
-        for (y <- 0 until mapDims) {
-          for (x <- 0 until mapDims) {
-            fields(x)(y) = new Field(x, y) {
-              onMouseClicked = (mouseEvent: MouseEvent) => onFieldClick(fields(x)(y), mouseEvent)
-            }
-            fields(x)(y).isBomb = if (new Random().nextInt(10) > 8) true else false
-            add(fields(x)(y), x, y, 1, 1)
-          }
+      root = new BorderPane {
+        top = new MenuBar {
+          useSystemMenuBar = true
+          menus = List(
+            new Menu("Game") {
+              items = List(
+                new MenuItem("New Game") {
+                  onAction = (_: ActionEvent) => {
+                    //TODO newGame
+                  }
+                },
+                new MenuItem("Exit") {
+                  onAction = (_: ActionEvent) => {
+                    Platform.exit()
+                    System.exit(0)
+                  }
+                },
+              )
+            },
+            new Menu("Help") {
+              items = List(
+                new MenuItem("Authors") {
+                  onAction = (_: ActionEvent) => {
+                    new Alert(AlertType.None) {
+                      initOwner(stage)
+                      title = "Autorzy"
+                      headerText = ""
+                      contentText = "Rafał Franczak i Piotr Kotara"
+                      buttonTypes = Seq(ButtonType.OK)
+                    }.showAndWait()
+                  }
+                },
+              )
+            },
+          )
         }
-        for (y <- 0 until mapDims) {
-          for (x <- 0 until mapDims) {
-            fields(x)(y).nearBombsCount = countNearBombs(fields, x, y)
+        center = new GridPane {
+          for (y <- 0 until mapDims) {
+            for (x <- 0 until mapDims) {
+              fields(x)(y) = new Field(x, y) {
+                onMouseClicked = (mouseEvent: MouseEvent) => onFieldClick(fields(x)(y), mouseEvent)
+              }
+              fields(x)(y).isBomb = if (new Random().nextInt(10) > 8) true else false
+              add(fields(x)(y), x, y, 1, 1)
+            }
+          }
+          for (y <- 0 until mapDims) {
+            for (x <- 0 until mapDims) {
+              fields(x)(y).nearBombsCount = countNearBombs(fields, x, y)
+            }
           }
         }
       }
@@ -64,12 +103,19 @@ object Minesweeper extends JFXApp {
       field.background = getBackground(200, 200, 200)
       if (field.isBomb) {
         field.graphic = new ImageView("bomb.png")
-        new Alert(AlertType.Error) {
-          initOwner(this.owner)
+        val NewGameButton = new ButtonType("New Game")
+        val QuitButton = new ButtonType("Quit")
+        val result = new Alert(AlertType.None) {
+          initOwner(stage)
           title = "PRZEGRAŁEŚ"
           headerText = ""
           contentText = "No sory, zostałeś wyjebany w powietrze"
+          buttonTypes = Seq(NewGameButton, QuitButton)
         }.showAndWait()
+        result match {
+          case Some(NewGameButton) => //TODO newGame
+          case _ => Platform.exit(); System.exit(0)
+        }
       }
       else {
         if (field.nearBombsCount == 0) {
