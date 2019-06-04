@@ -1,7 +1,6 @@
 import javafx.event.ActionEvent
 import javafx.scene.input.MouseEvent
 import javafx.scene.text
-import javafx.scene.text.FontPosture
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.application.{JFXApp, Platform}
 import scalafx.beans.property.IntegerProperty
@@ -12,7 +11,7 @@ import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout._
 import scalafx.scene.paint.Color
 import scalafx.scene.paint.Color._
-import scalafx.scene.text.{Font, FontWeight}
+import scalafx.scene.text.Font
 import utils._
 import views._
 
@@ -49,11 +48,14 @@ object Minesweeper extends JFXApp {
                     onAction = (_: ActionEvent) => {
                       val result = new SettingsDialog(stage, settings).showAndWait()
                       result match {
-                        case Some(GameSettings(w, h, b)) =>
+                        case Some(GameSettings(w, h, b)) if w >= 5 && h >= 5 && b >= 1 =>
                           if (GameSettings(w, h, b) != settings) {
                             settings = GameSettings(w, h, b)
                             newGame()
                           }
+                        case Some(GameSettings(_, _, _)) =>
+                            settings = GameSettings(5, 5, 1)
+                            newGame()
                         case _ =>
                       }
                     }

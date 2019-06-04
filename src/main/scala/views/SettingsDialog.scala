@@ -32,7 +32,9 @@ class SettingsDialog(stage: Stage, gameSettings: GameSettings) extends Dialog[Ga
 
   resultConverter = buttonType => {
     if (buttonType == ButtonType.OK)
-      GameSettings(mapXField.getText.toInt, mapYField.getText.toInt, bombsCountField.getText.toInt)
+      GameSettings( if (mapXField.getText != "") mapXField.getText.toInt else 0,
+        if (mapYField.getText != "") mapYField.getText.toInt else 0,
+        if (bombsCountField.getText != "") bombsCountField.getText.toInt else 0)
     else
       null
   }

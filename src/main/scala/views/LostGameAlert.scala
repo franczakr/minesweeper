@@ -10,6 +10,6 @@ class LostGameAlert(stage: Stage) extends Alert(AlertType.None) {
   initOwner(stage)
   title = "Przegrałeś"
   headerText = ""
-  contentText = "No sory, zostałeś wyjebany w powietrze"
+  contentText = "Niestety, twoje życie zakończyło się gdy zostałeś rozerwany przez bombę na tysiące kawałków"
   buttonTypes = Seq(ButtonTypes.NewGameButton, ButtonTypes.QuitButton)
 }

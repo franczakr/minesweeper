@@ -10,6 +10,6 @@ class WinAlert(stage: Stage) extends Alert(AlertType.None) {
   initOwner(stage)
   title = "Wygrałeś"
   headerText = ""
-  contentText = "Brawo, wygrałeś xD"
+  contentText = "Brawo, odkryłeś wszyskie bezpieczne pola i przeżyłeś!"
   buttonTypes = Seq(ButtonTypes.NewGameButton, ButtonTypes.QuitButton)
 }
