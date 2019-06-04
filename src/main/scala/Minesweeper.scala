@@ -4,28 +4,25 @@ import scalafx.application.JFXApp.PrimaryStage
 import scalafx.application.{JFXApp, Platform}
 import scalafx.geometry.Insets
 import scalafx.scene.Scene
-import scalafx.scene.control.Alert.AlertType
 import scalafx.scene.control._
 import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout._
 import scalafx.scene.paint.Color
 import scalafx.scene.paint.Color._
 import utils._
-import views.Field
+import views._
 
 import scala.util.Random
 
 object Minesweeper extends JFXApp {
 
-  private val maxX = 7
-  private val maxY = 10
-  private val bombsCount = 10
-
-  private val fields = Array.ofDim[Field](maxX, maxY)
+  private var settings: GameSettings = GameSettings(10, 10, 10)
+  private var fields: Array[Array[Field]] = _
 
   newGame()
 
   def newGame() {
+    fields = Array.ofDim[Field](settings.maxX, settings.maxY)
     stage = new PrimaryStage {
       title = "Minesweeper"
       icons.add(new Image("res/bomb.png"))
@@ -41,7 +38,17 @@ object Minesweeper extends JFXApp {
                     onAction = (_: ActionEvent) => newGame()
                   },
                   new MenuItem("Options") {
-                    onAction = (_: ActionEvent) => {} //TODO
+                    onAction = (_: ActionEvent) => {
+                      val result = new SettingsDialog(stage, settings).showAndWait()
+                      result match {
+                        case Some(GameSettings(w, h, b)) =>
+                          if (GameSettings(w, h, b) != settings) {
+                            settings = GameSettings(w, h, b)
+                            newGame()
+                          }
+                        case _ =>
+                      }
+                    }
                   },
                   new MenuItem("Exit") {
                     onAction = (_: ActionEvent) => {
@@ -54,26 +61,18 @@ object Minesweeper extends JFXApp {
               new Menu("Help") {
                 items = List(
                   new MenuItem("Authors") {
-                    onAction = (_: ActionEvent) => {
-                      new Alert(AlertType.None) {
-                        initOwner(stage)
-                        title = "Autorzy"
-                        headerText = ""
-                        contentText = "Rafał Franczak\nPiotr Kotara"
-                        buttonTypes = Seq(ButtonType.OK)
-                      }.showAndWait()
-                    }
+                    onAction = (_: ActionEvent) => new AuthorsAlert(stage).showAndWait()
                   },
                 )
               },
             )
           }
           center = new GridPane {
-            private var fieldsLeft = maxX * maxY
-            private var bombsLeft = bombsCount
+            private var fieldsLeft = settings.maxX * settings.maxY
+            private var bombsLeft = settings.bombsCount
             private val random = new Random()
-            for (y <- 0 until maxY) {
-              for (x <- 0 until maxX) {
+            for (y <- 0 until settings.maxY) {
+              for (x <- 0 until settings.maxX) {
                 fields(x)(y) = new Field(x, y) {
                   onMouseClicked = (mouseEvent: MouseEvent) => onFieldClick(fields(x)(y), mouseEvent)
                 }
@@ -85,8 +84,8 @@ object Minesweeper extends JFXApp {
                 fieldsLeft -= 1
               }
             }
-            for (y <- 0 until maxY) {
-              for (x <- 0 until maxX) {
+            for (y <- 0 until settings.maxY) {
+              for (x <- 0 until settings.maxX) {
                 if (fields(x)(y).content != Bomb())
                   fields(x)(y).content = EmptyField(countNearBombs(fields, x, y))
               }
@@ -94,6 +93,7 @@ object Minesweeper extends JFXApp {
           }
         }
       }
+      centerOnScreen()
     }
   }
 
@@ -123,17 +123,9 @@ object Minesweeper extends JFXApp {
         if (field.content == Bomb()) {
           showAll()
           field.background = getBackground(255, 0, 0, 0.9)
-          val NewGameButton = new ButtonType("New Game")
-          val QuitButton = new ButtonType("Quit")
-          val result = new Alert(AlertType.None) {
-            initOwner(stage)
-            title = "Przegrałeś"
-            headerText = ""
-            contentText = "No sory, zostałeś wyjebany w powietrze"
-            buttonTypes = Seq(NewGameButton, QuitButton)
-          }.showAndWait()
+          val result = new LostGameAlert(stage).showAndWait()
           result match {
-            case Some(NewGameButton) => newGame()
+            case Some(ButtonTypes.NewGameButton) => newGame()
             case _ => Platform.exit(); System.exit(0)
           }
         }
@@ -142,7 +134,7 @@ object Minesweeper extends JFXApp {
           val y = field.y
           for (dx <- -1 to 1) {
             for (dy <- -1 to 1) {
-              if (x + dx >= 0 && x + dx < maxX && y + dy >= 0 && y + dy < maxY && fields(x + dx)(y + dy).state == UnVisited())
+              if (x + dx >= 0 && x + dx < settings.maxX && y + dy >= 0 && y + dy < settings.maxY && fields(x + dx)(y + dy).state == UnVisited())
                 onFieldClick(fields(x + dx)(y + dy))
             }
           }
@@ -155,7 +147,7 @@ object Minesweeper extends JFXApp {
     var nearBombs = 0
     for (dx <- -1 to 1) {
       for (dy <- -1 to 1) {
-        if (x + dx >= 0 && x + dx < maxX && y + dy >= 0 && y + dy < maxY && fields(x + dx)(y + dy).content == Bomb())
+        if (x + dx >= 0 && x + dx < settings.maxX && y + dy >= 0 && y + dy < settings.maxY && fields(x + dx)(y + dy).content == Bomb())
           nearBombs += 1
       }
     }
@@ -181,8 +173,8 @@ object Minesweeper extends JFXApp {
   }
 
   def showAll(): Unit = {
-    for (y <- 0 until maxY) {
-      for (x <- 0 until maxX) {
+    for (y <- 0 until settings.maxY) {
+      for (x <- 0 until settings.maxX) {
         showField(fields(x)(y))
       }
     }
