@@ -11,7 +11,7 @@ class NumericField(maxValue: Int) extends TextField(
       override def changed(observable: ObservableValue[_ <: String], oldValue: String, newValue: String): Unit = {
         if (!newValue.matches("\\d{0,3}"))
           textField.setText(oldValue)
-        if(textField.getText.toInt > maxValue)
+        if(textField.getText != "" && textField.getText.toInt > maxValue)
           textField.setText(maxValue.toString)
       }
     }
