@@ -10,16 +10,17 @@ import scalafx.scene.image.{Image, ImageView}
 import scalafx.scene.layout._
 import scalafx.scene.paint.Color
 import scalafx.scene.paint.Color._
-import utils.{Flagged, UnVisited, Visited}
+import utils._
 import views.Field
 
 import scala.util.Random
 
 object Minesweeper extends JFXApp {
 
-  private val maxX = 40
-  private val maxY = 20
-  private val bombChance = 0.2
+  private val maxX = 7
+  private val maxY = 10
+  private val bombsCount = 10
+
   private val fields = Array.ofDim[Field](maxX, maxY)
 
   newGame()
@@ -37,9 +38,10 @@ object Minesweeper extends JFXApp {
               new Menu("Game") {
                 items = List(
                   new MenuItem("New Game") {
-                    onAction = (_: ActionEvent) => {
-                      newGame()
-                    }
+                    onAction = (_: ActionEvent) => newGame()
+                  },
+                  new MenuItem("Options") {
+                    onAction = (_: ActionEvent) => {} //TODO
                   },
                   new MenuItem("Exit") {
                     onAction = (_: ActionEvent) => {
@@ -67,18 +69,26 @@ object Minesweeper extends JFXApp {
             )
           }
           center = new GridPane {
+            private var fieldsLeft = maxX * maxY
+            private var bombsLeft = bombsCount
+            private val random = new Random()
             for (y <- 0 until maxY) {
               for (x <- 0 until maxX) {
                 fields(x)(y) = new Field(x, y) {
                   onMouseClicked = (mouseEvent: MouseEvent) => onFieldClick(fields(x)(y), mouseEvent)
                 }
-                fields(x)(y).isBomb = if (new Random().nextDouble() < bombChance) true else false
+                if (bombsLeft > 0 && random.nextDouble() * fieldsLeft <= bombsLeft.toDouble) {
+                  fields(x)(y).content = Bomb()
+                  bombsLeft -= 1
+                }
                 add(fields(x)(y), x, y, 1, 1)
+                fieldsLeft -= 1
               }
             }
             for (y <- 0 until maxY) {
               for (x <- 0 until maxX) {
-                fields(x)(y).nearBombsCount = countNearBombs(fields, x, y)
+                if (fields(x)(y).content != Bomb())
+                  fields(x)(y).content = EmptyField(countNearBombs(fields, x, y))
               }
             }
           }
@@ -110,7 +120,7 @@ object Minesweeper extends JFXApp {
       else if (field.state == UnVisited()) {
         field.state = Visited()
         showField(field)
-        if (field.isBomb) {
+        if (field.content == Bomb()) {
           showAll()
           field.background = getBackground(255, 0, 0, 0.9)
           val NewGameButton = new ButtonType("New Game")
@@ -127,13 +137,12 @@ object Minesweeper extends JFXApp {
             case _ => Platform.exit(); System.exit(0)
           }
         }
-        else if (field.nearBombsCount == 0) {
+        else if (field.content == EmptyField(0)) {
           val x = field.x
           val y = field.y
           for (dx <- -1 to 1) {
             for (dy <- -1 to 1) {
-              if (x + dx >= 0 && x + dx < maxX && y + dy >= 0 && y + dy < maxY &&
-                !fields(x + dx)(y + dy).isBomb && fields(x + dx)(y + dy).state == UnVisited())
+              if (x + dx >= 0 && x + dx < maxX && y + dy >= 0 && y + dy < maxY && fields(x + dx)(y + dy).state == UnVisited())
                 onFieldClick(fields(x + dx)(y + dy))
             }
           }
@@ -146,7 +155,7 @@ object Minesweeper extends JFXApp {
     var nearBombs = 0
     for (dx <- -1 to 1) {
       for (dy <- -1 to 1) {
-        if (x + dx >= 0 && x + dx < maxX && y + dy >= 0 && y + dy < maxY && fields(x + dx)(y + dy).isBomb)
+        if (x + dx >= 0 && x + dx < maxX && y + dy >= 0 && y + dy < maxY && fields(x + dx)(y + dy).content == Bomb())
           nearBombs += 1
       }
     }
@@ -155,24 +164,19 @@ object Minesweeper extends JFXApp {
 
   def showField(field: Field): Unit = {
     field.background = getBackground(200, 200, 200)
-    if (field.isBomb) {
-      field.graphic = new ImageView("res/bomb.png")
-    }
-    else {
-      if (field.nearBombsCount <= 0) return
-      field.text = field.nearBombsCount.toString
-      if (field.nearBombsCount == 1)
-        field.background = getBackground(217, 255, 179)
-      else if (field.nearBombsCount == 2)
-        field.background = getBackground(179, 255, 255)
-      else if (field.nearBombsCount == 3)
-        field.background = getBackground(255, 255, 179)
-      else if (field.nearBombsCount == 4)
-        field.background = getBackground(255, 217, 179)
-      else if (field.nearBombsCount == 5)
-        field.background = getBackground(255, 179, 179)
-      else if (field.nearBombsCount >= 6)
-        field.background = getBackground(255, 153, 153)
+    field.content match {
+      case Bomb() => field.graphic = new ImageView("res/bomb.png")
+      case EmptyField(c) if c > 0 =>
+        field.text = c.toString
+        c match {
+          case 1 => field.background = getBackground(217, 255, 179)
+          case 2 => field.background = getBackground(179, 255, 255)
+          case 3 => field.background = getBackground(255, 255, 179)
+          case 4 => field.background = getBackground(255, 217, 179)
+          case 5 => field.background = getBackground(255, 179, 179)
+          case _ => field.background = getBackground(255, 153, 153)
+        }
+      case _ =>
     }
   }
 
