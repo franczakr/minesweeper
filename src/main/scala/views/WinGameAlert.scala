@@ -6,10 +6,10 @@ import scalafx.stage.Stage
 import utils.ButtonTypes
 
 
-class WinAlert(stage: Stage) extends Alert(AlertType.None) {
+class WinGameAlert(stage: Stage, time: Int) extends Alert(AlertType.None) {
   initOwner(stage)
   title = "Wygrałeś"
   headerText = ""
-  contentText = "Brawo, odkryłeś wszyskie bezpieczne pola i przeżyłeś!"
+  contentText = s"Brawo, odkryłeś wszyskie bezpieczne pola i przeżyłeś!\n Twój czas to $time s"
   buttonTypes = Seq(ButtonTypes.NewGameButton, ButtonTypes.QuitButton)
 }

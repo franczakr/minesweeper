@@ -10,4 +10,5 @@ class AuthorsAlert(stage: Stage) extends Alert(AlertType.None) {
   headerText = ""
   contentText = "Rafał Franczak\nPiotr Kotara"
   buttonTypes = Seq(ButtonType.OK)
+
 }

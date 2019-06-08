@@ -1,6 +1,9 @@
+import javafx.animation.{Animation, KeyFrame}
 import javafx.event.ActionEvent
 import javafx.scene.input.MouseEvent
 import javafx.scene.text
+import javafx.util.Duration
+import scalafx.animation.Timeline
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.application.{JFXApp, Platform}
 import scalafx.beans.property.IntegerProperty
@@ -21,12 +24,21 @@ object Minesweeper extends JFXApp {
 
   private var settings: GameSettings = GameSettings(10, 10, 10)
   private val flagCount = new IntegerProperty()
-  private var fieldsToUncover = 0
+  private val time = new IntegerProperty()
+  private var fieldsToUncover: Int = _
   private var fields: Array[Array[Field]] = _
+  private val timeline = new Timeline(new javafx.animation.Timeline(new KeyFrame(Duration.seconds(1), _ => time.value += 1 )))
 
+  initialize()
   newGame()
 
+  def initialize(): Unit = {
+    timeline.setCycleCount(Animation.INDEFINITE)
+  }
+
   def newGame() {
+    time.value = 0
+    timeline.play()
     flagCount.value = 0
     fieldsToUncover = settings.maxX * settings.maxY - settings.bombsCount
     fields = Array.ofDim[Field](settings.maxX, settings.maxY)
@@ -71,7 +83,9 @@ object Minesweeper extends JFXApp {
               new Menu("Help") {
                 items = List(
                   new MenuItem("Authors") {
-                    onAction = (_: ActionEvent) => new AuthorsAlert(stage).showAndWait()
+                    onAction = (_: ActionEvent) => {
+                      new AuthorsAlert(stage).showAndWait()
+                    }
                   },
                 )
               },
@@ -83,6 +97,9 @@ object Minesweeper extends JFXApp {
                 private val labelFont = Font.font("System", text.FontWeight.SEMI_BOLD, 12.0)
                 padding = Insets(5, 20, 5, 20)
                 left = new Label("Bombs: " + settings.bombsCount) {font.value = labelFont}
+                center = new Label() {
+                  text.bind(time.asString("Time: %s"))
+                }
                 right = new Label() {
                   alignment = Pos.BaselineRight
                   text.bind(flagCount.asString("Flags: %s"))
@@ -150,6 +167,7 @@ object Minesweeper extends JFXApp {
         if (field.content == Bomb()) {
           showAll()
           field.background = getBackground(255, 0, 0, 0.9)
+          timeline.stop()
           val result = new LostGameAlert(stage).showAndWait()
           result match {
             case Some(ButtonTypes.NewGameButton) => newGame(); return
@@ -166,7 +184,8 @@ object Minesweeper extends JFXApp {
                 fields(x)(y).graphic = new ImageView("res/green_flag.png")
             }
           }
-          val result = new WinAlert(stage).showAndWait()
+          timeline.stop()
+          val result = new WinGameAlert(stage, time.value).showAndWait()
           result match {
             case Some(ButtonTypes.NewGameButton) => newGame(); return
             case _ => Platform.exit(); System.exit(0)
