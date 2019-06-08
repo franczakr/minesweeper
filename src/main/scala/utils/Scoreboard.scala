@@ -20,13 +20,13 @@ class Scoreboard(val settings: GameSettings) {
     }catch {
       case e: FileNotFoundException => {
         scoreboard = Array.empty[ScoreboardItem]
-        val fileWriter = new FileWriter(new File(filename))
-        fileWriter.write("HUEHUEHEUHEUHEHUEHUEH")
-        fileWriter.close()
+//        val fileWriter = new FileWriter(new File(filename))
+//        fileWriter.write("")
+//        fileWriter.close()
         throw new FileNotFoundException
     }
     }
-    scoreboard = Array.concat(scoreboard, Array(ScoreboardItem("DUpa", 69)))
+    scoreboard = Array.concat(scoreboard, Array(ScoreboardItem("mleko", 69)))
 
     scoreboard = scoreboard.sorted
 
