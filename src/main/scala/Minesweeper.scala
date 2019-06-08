@@ -1,3 +1,6 @@
+
+import java.io.FileNotFoundException
+
 import javafx.animation.{Animation, KeyFrame}
 import javafx.event.ActionEvent
 import javafx.scene.input.MouseEvent
@@ -19,6 +22,8 @@ import utils._
 import views._
 
 import scala.util.Random
+import scala.io._
+
 
 object Minesweeper extends JFXApp {
 
@@ -28,9 +33,11 @@ object Minesweeper extends JFXApp {
   private var fieldsToUncover: Int = _
   private var fields: Array[Array[Field]] = _
   private val timeline = new Timeline(new javafx.animation.Timeline(new KeyFrame(Duration.seconds(1), _ => time.value += 1 )))
-
+  private var scoreboard: Scoreboard = _
   initialize()
   newGame()
+
+
 
   def initialize(): Unit = {
     timeline.setCycleCount(Animation.INDEFINITE)
@@ -42,6 +49,8 @@ object Minesweeper extends JFXApp {
     flagCount.value = 0
     fieldsToUncover = settings.maxX * settings.maxY - settings.bombsCount
     fields = Array.ofDim[Field](settings.maxX, settings.maxY)
+    scoreboard = new Scoreboard(settings)
+    scoreboard.initScoreBoard()
     stage = new PrimaryStage {
       title = "Minesweeper"
       icons.add(new Image("res/bomb.png"))
@@ -55,6 +64,11 @@ object Minesweeper extends JFXApp {
                 items = List(
                   new MenuItem("New Game") {
                     onAction = (_: ActionEvent) => newGame()
+                  },
+                  new MenuItem("Scoreboard"){
+                    onAction = (_: ActionEvent) => {
+                      new ScoreBoardAlert(stage, scoreboard).showAndWait()
+                    }
                   },
                   new MenuItem("Options") {
                     onAction = (_: ActionEvent) => {

@@ -1,0 +1,3 @@
+mleko,120
+fafal,123
+piotrek,210
