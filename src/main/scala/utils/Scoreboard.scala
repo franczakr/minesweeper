@@ -1,17 +1,21 @@
 package utils
 
 import java.io._
+import java.nio.file.{Files, Paths}
 
 import scala.io.Source
 
 class Scoreboard(val settings: GameSettings) {
-  val filename = s"score${settings.maxX}x${settings.maxY}x${settings.bombsCount}.txt"
-  val filePath = s"src/main/scoreboard/$filename"
+  val scoreboardPath: String = new File(".").getCanonicalPath + "/scoreboard"
+  val filename: String = s"score${settings.maxX}x${settings.maxY}x${settings.bombsCount}.txt"
+  val filePath: String = s"${scoreboardPath.toString}/$filename"
 
   var scoreboard :Array[ScoreboardItem] = Array.empty[ScoreboardItem]
   def initScoreboard(): Unit = {
     try {
-      for (line <- Source.fromFile(filePath).getLines) {
+      if(!Files.exists(Paths.get(scoreboardPath)))
+        Files.createDirectory(Paths.get(scoreboardPath))
+      for (line <- Source.fromFile(filePath.toString).getLines) {
         val splitted = line.split(",")
         scoreboard = Array.concat(scoreboard, Array(ScoreboardItem(splitted(0), splitted(1).toInt)))
       }

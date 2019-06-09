@@ -2,6 +2,9 @@
   <artifact type="jar" name="Saper:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/Saper_jar</output-path>
     <root id="archive" name="Saper.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/../META-INF/MANIFEST.MF" />
+      </element>
       <element id="module-output" name="Saper" />
       <element id="extracted-dir" path="$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.12.8.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$USER_HOME$/.ivy2/cache/org.scalafx/scalafx_2.12/jars/scalafx_2.12-8.0.144-R12.jar" path-in-jar="/" />
