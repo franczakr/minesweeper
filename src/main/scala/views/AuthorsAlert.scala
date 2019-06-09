@@ -1,7 +1,7 @@
 package views
 
-import scalafx.scene.control.{Alert, ButtonType}
 import scalafx.scene.control.Alert.AlertType
+import scalafx.scene.control.{Alert, ButtonType}
 import scalafx.stage.Stage
 
 class AuthorsAlert(stage: Stage) extends Alert(AlertType.None) {

@@ -1,46 +1,40 @@
 package utils
 
-import java.io.{File, FileNotFoundException, FileWriter, PrintWriter}
+import java.io._
 
 import scala.io.Source
 
 class Scoreboard(val settings: GameSettings) {
-//  val filename = s"res/score${settings.maxX}X${settings.maxY}X${settings.bombsCount}.txt"
-  val filename = "C:\\Users\\piotr\\Desktop\\scala\\minesweeper\\target\\scala-2.12\\classes\\res\\score10X10X10.txt"
+  val filename = s"score${settings.maxX}x${settings.maxY}x${settings.bombsCount}.txt"
+  val filePath = s"src/main/scoreboard/$filename"
 
   var scoreboard :Array[ScoreboardItem] = Array.empty[ScoreboardItem]
-  def initScoreBoard(): Unit = {
+  def initScoreboard(): Unit = {
     try {
-      for (line <- Source.fromFile(filename).getLines) {
+      for (line <- Source.fromFile(filePath).getLines) {
         val splitted = line.split(",")
-        println(splitted(0))
         scoreboard = Array.concat(scoreboard, Array(ScoreboardItem(splitted(0), splitted(1).toInt)))
-
       }
-    }catch {
-      case e: FileNotFoundException => {
+    } catch {
+      case _: FileNotFoundException =>
         scoreboard = Array.empty[ScoreboardItem]
-//        val fileWriter = new FileWriter(new File(filename))
-//        fileWriter.write("")
-//        fileWriter.close()
-        throw new FileNotFoundException
+        val fileWriter = new FileWriter(new File(filePath))
+        fileWriter.write("")
+        fileWriter.close()
     }
-    }
-    scoreboard = Array.concat(scoreboard, Array(ScoreboardItem("mleko", 69)))
-
     scoreboard = scoreboard.sorted
-
   }
 
   def add(name: String, time: Int): Unit = {
     val scoreboardItem = ScoreboardItem(name, time)
     scoreboard = Array.concat(scoreboard, Array(scoreboardItem))
-    scoreboard = scoreboard.sorted
-    val writer = new PrintWriter(new File(filename))
-    writer.println()
+    scoreboard = scoreboard.sorted.take(10)
+    val writer = new PrintWriter(new File(filePath))
+    writer.print(getScoreboardAsString)
+    writer.close()
   }
 
-  override def toString: String = {
+  def getScoreboardAsString: String = {
     var ret: String = ""
     for (x: ScoreboardItem <- scoreboard) {
       ret = ret ++ x.name.toString ++ "," ++ x.time.toString ++ "\n"

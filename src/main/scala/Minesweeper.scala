@@ -1,6 +1,3 @@
-
-import java.io.FileNotFoundException
-
 import javafx.animation.{Animation, KeyFrame}
 import javafx.event.ActionEvent
 import javafx.scene.input.MouseEvent
@@ -22,7 +19,6 @@ import utils._
 import views._
 
 import scala.util.Random
-import scala.io._
 
 
 object Minesweeper extends JFXApp {
@@ -37,8 +33,6 @@ object Minesweeper extends JFXApp {
   initialize()
   newGame()
 
-
-
   def initialize(): Unit = {
     timeline.setCycleCount(Animation.INDEFINITE)
   }
@@ -50,7 +44,7 @@ object Minesweeper extends JFXApp {
     fieldsToUncover = settings.maxX * settings.maxY - settings.bombsCount
     fields = Array.ofDim[Field](settings.maxX, settings.maxY)
     scoreboard = new Scoreboard(settings)
-    scoreboard.initScoreBoard()
+    scoreboard.initScoreboard()
     stage = new PrimaryStage {
       title = "Minesweeper"
       icons.add(new Image("res/bomb.png"))
@@ -66,9 +60,7 @@ object Minesweeper extends JFXApp {
                     onAction = (_: ActionEvent) => newGame()
                   },
                   new MenuItem("Scoreboard"){
-                    onAction = (_: ActionEvent) => {
-                      new ScoreBoardAlert(stage, scoreboard).showAndWait()
-                    }
+                    onAction = (_: ActionEvent) => new ScoreboardAlert(stage, scoreboard).showAndWait()
                   },
                   new MenuItem("Options") {
                     onAction = (_: ActionEvent) => {
@@ -152,6 +144,22 @@ object Minesweeper extends JFXApp {
     }
   }
 
+  private def winGame(): Unit = {
+    for (y <- 0 until settings.maxY) {
+      for (x <- 0 until settings.maxX) {
+        if (fields(x)(y).state != Flagged() && fields(x)(y).content == Bomb())
+          fields(x)(y).graphic = new ImageView("res/green_flag.png")
+      }
+    }
+    timeline.stop()
+    scoreboard.add("player", time.value)
+    val result = new WinGameAlert(stage, time.value).showAndWait()
+    result match {
+      case Some(ButtonTypes.NewGameButton) => newGame()
+      case _ => Platform.exit(); System.exit(0)
+    }
+  }
+
   private def getBackground(red: Int, green: Int, blue: Int, alpha: Double = 1.0): Background = {
     new Background(Array(new BackgroundFill(
       new Color(Color.rgb(red, green, blue, alpha)),
@@ -191,20 +199,8 @@ object Minesweeper extends JFXApp {
         else if (field.content == EmptyField(0)) {
           showEmptyFields(field)
         }
-        if (fieldsToUncover == 0) {
-          for (y <- 0 until settings.maxY) {
-            for (x <- 0 until settings.maxX) {
-              if (fields(x)(y).state != Flagged() && fields(x)(y).content == Bomb())
-                fields(x)(y).graphic = new ImageView("res/green_flag.png")
-            }
-          }
-          timeline.stop()
-          val result = new WinGameAlert(stage, time.value).showAndWait()
-          result match {
-            case Some(ButtonTypes.NewGameButton) => newGame(); return
-            case _ => Platform.exit(); System.exit(0)
-          }
-        }
+        if (fieldsToUncover == 0)
+          winGame()
       }
     }
   }

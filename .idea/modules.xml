@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Saper.iml" filepath="$PROJECT_DIR$/.idea/modules/Saper.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Saper-build.iml" filepath="$PROJECT_DIR$/.idea/modules/Saper-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/saper-build.iml" filepath="$PROJECT_DIR$/.idea/modules/saper-build.iml" />
     </modules>
   </component>
 </project>

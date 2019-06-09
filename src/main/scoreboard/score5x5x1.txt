@@ -1,0 +1,10 @@
+player,0
+player,0
+player,0
+player,1
+player,1
+player,1
+player,1
+player,1
+player,2
+player,2
