@@ -8,21 +8,19 @@ class Scoreboard(val settings: GameSettings) {
   val filename: String = s"score${settings.maxX}x${settings.maxY}x${settings.bombsCount}.txt"
   val filePath: Path = Paths.get(scoreboardPath.toString, filename)
 
-  var scoreboard :Array[ScoreboardItem] = Array.empty[ScoreboardItem]
+  var scoreboard: Array[ScoreboardItem] = _
+
   def initScoreboard(): Unit = {
-    try {
-      if(!Files.exists(scoreboardPath))
-        Files.createDirectory(scoreboardPath)
-      for (line <- Files.readAllLines(filePath).toArray(new Array[String](0))) {
+    scoreboard = Array.empty[ScoreboardItem]
+    if (!Files.exists(scoreboardPath))
+      Files.createDirectory(scoreboardPath)
+    if (Files.exists(filePath)) {
+      for (line <- Files.readAllLines(filePath).toArray(Array.empty[String])) {
         val splitted = line.split(",")
         scoreboard = Array.concat(scoreboard, Array(ScoreboardItem(splitted(0), splitted(1).toInt)))
       }
-    } catch {
-      case _: FileNotFoundException =>
-        scoreboard = Array.empty[ScoreboardItem]
-        Files.createFile(filePath)
+      scoreboard = scoreboard.sorted
     }
-    scoreboard = scoreboard.sorted
   }
 
   def add(name: String, time: Int): Unit = {
