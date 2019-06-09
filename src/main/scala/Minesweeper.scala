@@ -23,7 +23,7 @@ import scala.util.Random
 
 object Minesweeper extends JFXApp {
 
-  private var settings: GameSettings = GameSettings(10, 10, 10)
+  private var settings: GameSettings = GameSettings(10, 10, 10, "player")
   private val flagCount = new IntegerProperty()
   private val time = new IntegerProperty()
   private var fieldsToUncover: Int = _
@@ -60,20 +60,21 @@ object Minesweeper extends JFXApp {
                     onAction = (_: ActionEvent) => newGame()
                   },
                   new MenuItem("Scoreboard"){
-                    onAction = (_: ActionEvent) => new ScoreboardAlert(stage, scoreboard).showAndWait()
+                    onAction = (_: ActionEvent) => new ScoreboardDialog(stage, scoreboard).showAndWait()
                   },
-                  new MenuItem("Options") {
+                  new MenuItem("Settings") {
                     onAction = (_: ActionEvent) => {
                       val result = new SettingsDialog(stage, settings).showAndWait()
                       result match {
-                        case Some(GameSettings(w, h, b)) if w >= 5 && h >= 5 && b >= 1 =>
-                          if (GameSettings(w, h, b) != settings) {
-                            settings = GameSettings(w, h, b)
+                        case Some(GameSettings(w, h, b, name)) =>
+                          if (GameSettings(w, h, b, name) != settings) {
+                            val width = if (w >= 5) w else 5
+                            val height = if(h >= 5) h else 5
+                            val bombs = if(b <= width*height && b > 0) b else 1
+                            val playerName = if(name != "") name else "player"
+                            settings = GameSettings(width, height, bombs, playerName)
                             newGame()
                           }
-                        case Some(GameSettings(_, _, _)) =>
-                            settings = GameSettings(5, 5, 1)
-                            newGame()
                         case _ =>
                       }
                     }
@@ -152,7 +153,7 @@ object Minesweeper extends JFXApp {
       }
     }
     timeline.stop()
-    scoreboard.add("player", time.value)
+    scoreboard.add(settings.playerName, time.value)
     val result = new WinGameAlert(stage, time.value).showAndWait()
     result match {
       case Some(ButtonTypes.NewGameButton) => newGame()

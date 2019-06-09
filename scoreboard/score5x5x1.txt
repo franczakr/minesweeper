@@ -1,3 +1,7 @@
 player,0
+rafal,0
 player,2
 player,2
+rafal,2
+player,5
+rafal,8

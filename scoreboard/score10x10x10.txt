@@ -1,3 +1,6 @@
+player,26
+player,35
+player,40
 mleko,120
 fafal,123
 piotrek,210
